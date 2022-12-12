@@ -1,6 +1,7 @@
 namespace ExtensionMethods
 {
     using System;
+    using System.Text;
 
     /// <inheritdoc cref="IComplex"/>
     public class Complex : IComplex
@@ -24,7 +25,7 @@ namespace ExtensionMethods
         {
             get
             {
-                throw new System.NotImplementedException();
+                return this.re;
             }
         }
 
@@ -33,7 +34,7 @@ namespace ExtensionMethods
         {
             get
             {
-                throw new System.NotImplementedException();
+                return this.im;
             }
         }
 
@@ -42,7 +43,7 @@ namespace ExtensionMethods
         {
             get
             {
-                throw new System.NotImplementedException();
+                return Math.Sqrt(Math.Pow(Real, 2) + Math.Pow(Imaginary, 2));
             }
         }
 
@@ -51,35 +52,50 @@ namespace ExtensionMethods
         {
             get
             {
-                throw new System.NotImplementedException();
+                return Math.Atan2(Imaginary, Real);
             }
         }
-
-        /// <inheritdoc cref="IComplex.ToString"/>
-        public override string ToString()
-        {
-            // TODO improve
-            return base.ToString();
-        }
-
+        
         /// <inheritdoc cref="IEquatable{T}.Equals(T)"/>
         public bool Equals(IComplex other)
         {
-            throw new System.NotImplementedException();
+            return other != null &&
+                   Real == other.Real &&
+                   Imaginary == other.Imaginary;
         }
 
-        /// <inheritdoc cref="object.Equals(object?)"/>
+         /// <inheritdoc cref="object.Equals(object?)"/>
         public override bool Equals(object obj)
         {
-            // TODO improve
-            return base.Equals(obj);
+            if(obj is IComplex)
+                return this.Equals(obj);
+            return false;
         }
 
         /// <inheritdoc cref="object.GetHashCode"/>
         public override int GetHashCode()
         {
-            // TODO improve
-            return base.GetHashCode();
+            return HashCode.Combine(re, im, Real, Imaginary, Modulus, Phase);
+        }
+
+        /// <inheritdoc cref="IComplex.ToString"/>
+        public override string ToString()
+        {
+            double imAbs = Math.Abs(Imaginary);
+            string imValue = imAbs == 1.0 ? "" : imAbs.ToString();
+            string sign = Imaginary > 0 ? "+" : "-";
+
+            StringBuilder sB = new StringBuilder();
+            if(Imaginary == 0.0 || Real == 0d)
+            {
+                if (Imaginary == 0.0)
+                    sB.Append(Real.ToString());
+                else if (Real == 0d)
+                    sB.Append(sign + "i" + imValue);
+            }
+            else
+                sB.Append(Real.ToString() + " " + sign + " i" + imValue);
+            return sB.ToString();
         }
     }
 }

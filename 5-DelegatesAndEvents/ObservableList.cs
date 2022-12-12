@@ -7,6 +7,8 @@ namespace DelegatesAndEvents
     /// <inheritdoc cref="IObservableList{T}" />
     public class ObservableList<TItem> : IObservableList<TItem>
     {
+        private readonly IList<TItem> list = new List<TItem>();
+
         /// <inheritdoc cref="IObservableList{T}.ElementInserted" />
         public event ListChangeCallback<TItem> ElementInserted;
 
@@ -21,7 +23,7 @@ namespace DelegatesAndEvents
         {
             get
             {
-                throw new NotImplementedException();
+                return list.Count;
             }
         }
 
@@ -30,21 +32,25 @@ namespace DelegatesAndEvents
         {
             get
             {
-                throw new NotImplementedException();
+                return list.IsReadOnly;
             }
         }
 
         /// <inheritdoc cref="IList{T}.this" />
         public TItem this[int index]
         {
-            get { throw new System.NotImplementedException(); }
-            set { throw new System.NotImplementedException(); }
+            get { return list[index]; }
+            set { 
+                TItem oldItem = list[index];
+                list[index] = value;
+                ElementChanged?.Invoke(this, value, oldItem, index);
+            }
         }
 
         /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
         public IEnumerator<TItem> GetEnumerator()
         {
-            throw new System.NotImplementedException();
+            return list.GetEnumerator();
         }
 
         /// <inheritdoc cref="IEnumerable.GetEnumerator" />
@@ -56,70 +62,84 @@ namespace DelegatesAndEvents
         /// <inheritdoc cref="ICollection{T}.Add" />
         public void Add(TItem item)
         {
-            throw new System.NotImplementedException();
+            list.Add(item);
+            ElementInserted?.Invoke(this, item, list.Count - 1);
         }
 
         /// <inheritdoc cref="ICollection{T}.Clear" />
         public void Clear()
         {
-            throw new System.NotImplementedException();
+            IList<TItem> oldList = new List<TItem>(list);
+            list.Clear();
+            for(int i = 0; i < oldList.Count; i++)
+                ElementRemoved?.Invoke(this, oldList[i], i);
         }
 
         /// <inheritdoc cref="ICollection{T}.Contains" />
         public bool Contains(TItem item)
         {
-            throw new System.NotImplementedException();
+            return list.Contains(item);
         }
 
         /// <inheritdoc cref="ICollection{T}.CopyTo" />
         public void CopyTo(TItem[] array, int arrayIndex)
         {
-            throw new System.NotImplementedException();
+            list.CopyTo(array, arrayIndex);
         }
 
         /// <inheritdoc cref="ICollection{T}.Remove" />
         public bool Remove(TItem item)
         {
-            throw new System.NotImplementedException();
+           if(list.IndexOf(item) >= 0)
+           {
+                RemoveAt(list.IndexOf(item));
+                return true;
+           }
+           return false;
         }
 
         /// <inheritdoc cref="IList{T}.IndexOf" />
         public int IndexOf(TItem item)
         {
-            throw new System.NotImplementedException();
+            return list.IndexOf(item);
         }
 
         /// <inheritdoc cref="IList{T}.RemoveAt" />
         public void Insert(int index, TItem item)
         {
-            throw new System.NotImplementedException();
+            list.Insert(index, item);
+            ElementInserted?.Invoke(this, item, index);
         }
 
         /// <inheritdoc cref="IList{T}.RemoveAt" />
         public void RemoveAt(int index)
         {
-            throw new System.NotImplementedException();
+            TItem removedItem = list[index];
+            list.Remove(list[index]);
+            ElementRemoved?.Invoke(this, removedItem, index);
         }
 
         /// <inheritdoc cref="object.Equals(object?)" />
         public override bool Equals(object obj)
         {
-            // TODO improve
-            return base.Equals(obj);
+            if (obj is null || obj.GetType() != this.GetType())
+            {
+                return false;
+            }
+            ObservableList<TItem> other = obj as ObservableList<TItem>;
+            return list.Equals(other.list);
         }
 
         /// <inheritdoc cref="object.GetHashCode" />
         public override int GetHashCode()
         {
-            // TODO improve
-            return base.GetHashCode();
+            return list.GetHashCode();
         }
 
         /// <inheritdoc cref="object.ToString" />
         public override string ToString()
         {
-            // TODO improve
-            return base.ToString();
+            return $"[{string.Join(", ", list)}]";
         }
     }
 }

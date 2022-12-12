@@ -6,27 +6,49 @@ namespace Collections
     public class SocialNetworkUser<TUser> : User, ISocialNetworkUser<TUser>
         where TUser : IUser
     {
+        private readonly IDictionary<string, ISet<TUser>> _followed = new Dictionary<string, ISet<TUser>>();
         public SocialNetworkUser(string fullName, string username, uint? age) : base(fullName, username, age)
-        {
-            throw new NotImplementedException("TODO is there anything to do here?");
-        }
+        {}
 
         public bool AddFollowedUser(string group, TUser user)
         {
-            throw new NotImplementedException("TODO add user to the provided group. Return false if the user was already in the group");
+            ISet<TUser> usr;
+            if(_followed.ContainsKey(group))
+            {
+                usr = _followed[group];
+                return usr.Add(user);
+            }
+            else
+            {
+                usr = new HashSet<TUser>();
+                usr.Add(user);
+                _followed.Add(group, usr);
+                return true;
+            }
         }
 
         public IList<TUser> FollowedUsers
         {
             get
             {
-                throw new NotImplementedException("TODO construct and return the list of all users followed by the current users, in all groups");
+                IList<TUser> followedUsers = new List<TUser>();
+                foreach (var group in _followed.Keys)
+                {
+                    foreach (var user in _followed[group])
+                    {
+                        followedUsers.Add(user);
+                    }
+                }
+                return followedUsers;
             }
         }
 
         public ICollection<TUser> GetFollowedUsersInGroup(string group)
         {
-            throw new NotImplementedException("TODO construct and return a collection containing of all users followed by the current users, in group");
+            if(_followed.ContainsKey(group))
+                return new HashSet<TUser>(_followed[group]);
+            else
+                return new HashSet<TUser>();
         }
     }
 }
